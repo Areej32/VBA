@@ -1,0 +1,101 @@
+
+
+Sub STOCK_DATA():
+
+' Set variables
+ Dim total_volume As Double
+ 
+Dim yearly_change As Single
+Dim Table_Row As Long
+Dim LastRow As Long
+Dim percent_Change As Double
+Dim days As Integer
+Dim daily_Change As Single
+Dim i As Long
+Dim j As Integer
+
+'*****************************************
+'*** Set values for each worksheet***
+Dim ws As Worksheet
+For Each ws In Worksheets
+j = 0
+total_volume = 0
+yearly_change = 0
+Table_Row = 2
+daily_Change = 0
+
+'******************************************
+' ***set the header names***
+ws.Range("I1").Value = "Ticker"
+ws.Range("J1").Value = "Yearly Change"
+ws.Range("K1").Value = "Percent Change"
+ws.Range("L1").Value = "Total Stock Volume"
+ws.Range("P1").Value = "Ticker"
+
+'*****************************************
+'***set LastRow***
+LastRow = Cells(Rows.Count, "A").End(xlUp).Row
+
+'starting For loops to find values
+For i = 2 To LastRow
+If ws.Cells(i + 1, 1).Value <> ws.Cells(i, 1).Value Then
+total_volume = total_volume + ws.Cells(i, 7).Value
+
+' incase total_volume=0
+If total_volume = 0 Then
+ws.Range("I" & 2 + j).Value = Cells(i, 1).Value
+ws.Range("J" & 2 + j).Value = 0
+ws.Range("K" & 2 + j).Value = "%" & 0
+ws.Range("L" & 2 + j).Value = 0
+Else
+
+' Find First non zero starting value
+If ws.Cells(Table_Row, 3) = 0 Then
+For find_value = Table_Row To i
+If ws.Cells(find_value, 3).Value <> 0 Then
+Table_Row = find_value
+ Exit For
+End If
+Next find_value
+End If
+'****************************************
+' find yearly_change
+yearly_change = (ws.Cells(i, 6) - ws.Cells(Table_Row, 3))
+percent_Change = Round((yearly_change / ws.Cells(Table_Row, 3) * 100), 2)
+Table_Row = i + 1
+ ' print the results
+ws.Range("I" & 2 + j).Value = ws.Cells(i, 1).Value
+ws.Range("J" & 2 + j).Value = Round(yearly_change, 2)
+ws.Range("K" & 2 + j).Value = "%" & percent_Change
+ws.Range("L" & 2 + j).Value = total_volume
+'****************************************
+'apply conditional formating
+            Select Case yearly_change
+                Case Is > 0
+                ws.Range("J" & 2 + j).Interior.ColorIndex = 4
+                Case Is < 0
+                    ws.Range("J" & 2 + j).Interior.ColorIndex = 3
+                Case Else
+                    ws.Range("J" & 2 + j).Interior.ColorIndex = 0
+            End Select
+            
+        End If
+'**************************************
+            ' reset variables for new stock ticker
+            total_volume = 0
+           yearly_change = 0
+            j = j + 1
+            days = 0
+            daily_Change = 0
+
+    ' If ticker is still the same add results
+        Else
+            total_volume = total_volume + ws.Cells(i, 7).Value
+
+        End If
+
+    Next i
+
+
+Next ws
+End Sub
